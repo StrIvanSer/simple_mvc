@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+        <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+        <head>
+            <meta charset="UTF-8">
+            <title>My book shelf</title>
+        </head>
+<body>
+<h3>New user</h3>
+<div class="root_container">
+    <form method="post" th:action="@{/registration/save}" th:object="${user}">
+        <table>
+            <tr>
+                <td>
+                    <input type="text"  required pattern="^[a-zA-Z]+$" placeholder="username" th:field="*{username}">
+                </td>
+                <td>
+                    <input type="text" required placeholder="password" th:field="*{password}">
+                </td>
+                <td>
+                    <input type="submit" value="add new user">
+                </td>
+            </tr>
+        </table>
+    </form>
+
+
+    <table class="books">
+        <tr>
+            <th>username</th>
+            <th>password</th>
+
+        </tr>
+        <tr th:each="user : ${userList}">
+            <td th:text="${user.username}"></td>
+            <td th:text="${user.password}"></td>
+        </tr>
+    </table>
+</div>
+
+<form method="get" th:action="@{/login}">
+    <input class="button_item" type="submit" value="exit">
+</form>
+
+</body>
+</html></title>
+</head>
+<body>
+
+</body>
+</html>
