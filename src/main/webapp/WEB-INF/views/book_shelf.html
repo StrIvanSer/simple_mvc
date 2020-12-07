@@ -32,8 +32,8 @@
 <body>
 <div id="root_container">
 
-    <form method="post" th:action="@{/books/addBook}" >
-        <button type="submit">Add books to the store </button>
+    <form method="post" th:action="@{/books/addBook}">
+        <button type="submit">Add books to the store</button>
     </form>
 
     <form method="post" th:action="@{/books/save}" th:object="${book}">
@@ -67,50 +67,6 @@
                 </td>
             </tr>
         </table>
-    </form>
-
-    <form method="post" th:action="@{/books/removeByAuthor}">
-        <table>
-            <tr>
-                <td>
-                    <input type="text" placeholder="Author name" th:name="bookAuthorToRemove">
-                </td>
-                <td>
-                    <input type="submit" value="remove">
-                </td>
-            </tr>
-        </table>
-    </form>
-
-    <form method="post" th:action="@{/books/removeByTitle}">
-        <table>
-            <tr>
-                <td>
-                    <input type="text" placeholder="Title book" th:name="bookTitleToRemove">
-                </td>
-                <td>
-                    <input type="submit" value="remove">
-                </td>
-            </tr>
-        </table>
-    </form>
-
-    <form method="post" th:action="@{/books/removeBySize}">
-        <table>
-            <tr>
-                <td>
-                    <input type="text" placeholder="Size book" th:name="bookSizeToRemove">
-                </td>
-                <td>
-                    <input type="submit" value="remove">
-                </td>
-            </tr>
-        </table>
-    </form>
-
-    <form method="post" th:action="@{/books/filter}" >
-        <input type="text" placeholder="Filter" name="filter">
-        <button type="submit">Search book</button>
     </form>
 
     <table id="books">

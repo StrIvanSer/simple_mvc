@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.example.app.services.BookService;
 import org.example.web.dto.Book;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +18,7 @@ import static java.util.Objects.nonNull;
 
 @Controller
 @RequestMapping(value = "books")
+@Scope("singleton")
 public class BookShelfController {
 
     private final Logger logger = Logger.getLogger(BookShelfController.class);
@@ -29,17 +31,9 @@ public class BookShelfController {
 
     @GetMapping("/shelf")
     public String books(Model model) {
-        logger.info("got book shelf");
+        logger.info(this.toString());
         model.addAttribute("book", new Book());
         model.addAttribute("bookList", bookService.getAllBooks());
-        return "book_shelf";
-    }
-
-    @PostMapping("/filter")
-    public String filter(@RequestParam String filter, Model model) {
-        logger.info("filter by Author");
-        model.addAttribute("book", new Book());
-        model.addAttribute("bookList", bookService.getBooksWithFilter(filter));
         return "book_shelf";
     }
 
@@ -61,34 +55,11 @@ public class BookShelfController {
     }
 
     @PostMapping("/removeById")
-    public String removeBookById(@RequestParam(value = "bookIdToRemove") Integer bookIdRemove) {
+    public String removeBookById(@RequestParam(value = "bookIdToRemove") String bookIdRemove) {
         if (bookService.removeBookById(bookIdRemove)) {
             logger.info("Remove book with ID: " + bookIdRemove);
         }
         return "redirect:/books/shelf";
     }
 
-    @PostMapping("/removeByAuthor")
-    public String removeBookByAuthor(@RequestParam(value = "bookAuthorToRemove") String bookAuthorRemove) {
-        if (bookService.removeBooksByAuthor(bookAuthorRemove)) {
-            logger.info("Remove books where Author: " + bookAuthorRemove);
-        }
-        return "redirect:/books/shelf";
-    }
-
-    @PostMapping("/removeBySize")
-    public String removeBookBySize(@RequestParam(value = "bookSizeToRemove") Integer bookSizeRemove) {
-        if (nonNull(bookSizeRemove) && bookService.removeBooksBySize(bookSizeRemove)) {
-            logger.info("Remove book with Size: " + bookSizeRemove);
-        }
-        return "redirect:/books/shelf";
-    }
-
-    @PostMapping("/removeByTitle")
-    public String removeBookSize(@RequestParam(value = "bookTitleToRemove") String bookTitleRemove) {
-        if (bookService.removeBooksByTitle(bookTitleRemove)) {
-            logger.info("Remove book with Filter: " + bookTitleRemove);
-        }
-        return "redirect:/books/shelf";
-    }
 }
