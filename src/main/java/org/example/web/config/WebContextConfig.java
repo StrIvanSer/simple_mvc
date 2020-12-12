@@ -31,7 +31,7 @@ public class WebContextConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public SpringTemplateEngine templateEngine(){
+    public SpringTemplateEngine templateEngine() {
         SpringTemplateEngine templateEngine = new SpringTemplateEngine();
         templateEngine.setTemplateResolver(templateResolver());
 
@@ -39,7 +39,7 @@ public class WebContextConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public ThymeleafViewResolver viewResolver(){
+    public ThymeleafViewResolver viewResolver() {
         ThymeleafViewResolver viewResolver = new ThymeleafViewResolver();
         viewResolver.setTemplateEngine(templateEngine());
         viewResolver.setOrder(1);

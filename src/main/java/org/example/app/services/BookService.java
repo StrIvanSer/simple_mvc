@@ -43,4 +43,5 @@ public class BookService {
     private void defaultDestroy() {
         logger.info("default DESTROY in BookService bean");
     }
+
 }

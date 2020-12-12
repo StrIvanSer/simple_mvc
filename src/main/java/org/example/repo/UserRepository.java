@@ -26,8 +26,8 @@ public class UserRepository {
     }
 
     public boolean checkUserRegister(String login, String password) {
-        for(User user : retrieveAll()){
-            if (user.getUsername().equals(login) && user.getPassword().equals(password)){
+        for (User user : retrieveAll()) {
+            if (user.getUsername().equals(login) && user.getPassword().equals(password)) {
                 logger.info("Auth is completed: " + login + " " + password);
                 return true;
             }

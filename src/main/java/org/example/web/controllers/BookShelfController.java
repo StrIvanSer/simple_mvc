@@ -4,14 +4,18 @@ package org.example.web.controllers;
 import org.apache.log4j.Logger;
 import org.example.app.services.BookService;
 import org.example.web.dto.Book;
+import org.example.web.dto.BookIdToRemove;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.validation.Valid;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -33,6 +37,7 @@ public class BookShelfController {
     public String books(Model model) {
         logger.info(this.toString());
         model.addAttribute("book", new Book());
+        model.addAttribute("bookIdToRemove", new BookIdToRemove());
         model.addAttribute("bookList", bookService.getAllBooks());
         return "book_shelf";
     }
@@ -45,21 +50,30 @@ public class BookShelfController {
     }
 
     @PostMapping("/save")
-    public String saveBook(Book book) {
-        if (book.getAuthor().length() == 0 && isNull(book.getSize()) && book.getTitle().length() == 0) {
+    public String saveBook(@Valid Book book, BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("book", book);
+            model.addAttribute("bookIdToRemove", new BookIdToRemove());
+            model.addAttribute("bookList", bookService.getAllBooks());
+            return "book_shelf";
+        } else {
+            bookService.saveBook(book);
+            logger.info("current repository size: " + bookService.getAllBooks().size());
             return "redirect:/books/shelf";
         }
-        bookService.saveBook(book);
-        logger.info("current repository size: " + bookService.getAllBooks().size());
-        return "redirect:/books/shelf";
     }
 
-    @PostMapping("/removeById")
-    public String removeBookById(@RequestParam(value = "bookIdToRemove") String bookIdRemove) {
-        if (bookService.removeBookById(bookIdRemove)) {
+    @PostMapping("/remove")
+    public String removeBook(@Valid BookIdToRemove bookIdRemove, BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("book", new Book());
+            model.addAttribute("bookList", bookService.getAllBooks());
+            return "book_shelf";
+        } else {
+            bookService.removeBookById(bookIdRemove.getId());
             logger.info("Remove book with ID: " + bookIdRemove);
+            return "redirect:/books/shelf";
         }
-        return "redirect:/books/shelf";
     }
 
 }
