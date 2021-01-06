@@ -1,5 +1,7 @@
 package org.example.repo;
 
+import org.example.web.dto.Book;
+
 import java.util.List;
 
 public interface ProjectRepository<T> {
@@ -8,10 +10,9 @@ public interface ProjectRepository<T> {
 
     void store(T book);
 
+    boolean removeItemByField(T book);
+
     boolean removeItemById(Integer bookIdRemove);
 
-    //    boolean removeItemsByAuthor(String bookAuthorRemove);
-//    boolean removeItemsBySize(Integer bookSizeRemove);
-//    boolean removeItemsByTitle(String bookTitleRemove);
     void addDefaultBook();
 }

@@ -41,13 +41,15 @@
             <tr>
                 <td>
                     <input type="text" placeholder="author" th:field="*{author}">
+                    <p th:if="${#fields.hasErrors()}">Author is Empty, please fill in the form ! </p>
                 </td>
                 <td>
                     <input type="text" placeholder="book_title" th:field="*{title}">
+                    <p th:if="${#fields.hasErrors()}">Title is Empty, please fill in the form ! </p>
                 </td>
                 <td>
                     <input type="text" pattern="^\d+$" placeholder="size (pages)" th:field="*{size}">
-                    <p th:if="${#fields.hasErrors()}">field values must be digit and less than 4 signs</p>
+                    <p th:if="${#fields.hasErrors()}">field values must be digit, not null and less than 4 signs</p>
                 </td>
                 <td>
                     <input type="submit" value="save">
@@ -73,6 +75,22 @@
         </table>
     </form>
 
+    <form method="post" th:action="@{/books/removeByField}">
+        <table>
+            <tr>
+                <td>
+                    <input type="text" placeholder="Any field" th:name="fieldValue">
+                </td>
+                <td>
+                    <input type="submit" value="remove">
+                    <div th:if="${errorEmptyFieldMessage}" th:utext="${errorEmptyFieldMessage}"
+                         style="color:#ff0000;font-style:italic;">
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </form>
+
     <form method="post" th:action="@{/books/uploadFile}" enctype="multipart/form-data">
         <table>
             <tr>
@@ -81,9 +99,31 @@
                 </td>
                 <td>
                     <input type="submit" value="Upload">
+                    <div th:if="${errorUploadMessage}" th:utext="${errorUploadMessage}"
+                         style="color:#ff0000;font-style:italic;">
+                    </div>
+                </td>
+
+            </tr>
+        </table>
+    </form>
+
+    <form method="get" th:action="@{/books/download}">
+        <table>
+            <tr>
+                <td>
+                    <input type="file" name="downloadfile"/>
+                </td>
+                <td>
+                    <input class="button" type="submit" value="Download">
                 </td>
             </tr>
         </table>
+    </form>
+
+    <form method="post" th:action="@{/books/filter}">
+        <input type="text" placeholder="Filter" name="filter">
+        <button type="submit">Search book</button>
     </form>
 
     <table id="books">

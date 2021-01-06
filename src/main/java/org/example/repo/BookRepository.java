@@ -38,6 +38,17 @@ public class BookRepository implements ProjectRepository<Book>, ApplicationConte
     }
 
     @Override
+    public boolean removeItemByField(Book book) {
+        MapSqlParameterSource parameterSource = new MapSqlParameterSource();
+        parameterSource.addValue("title", book.getTitle());
+        parameterSource.addValue("author", book.getAuthor());
+        parameterSource.addValue("size", book.getSize());
+        jdbcTemplate.update("DELETE FROM books WHERE title = :title AND author = :author AND size = :size", parameterSource);
+        logger.info("remove book completed");
+        return true;
+    }
+
+    @Override
     public List<Book> retrieveAll() {
         List<Book> books = jdbcTemplate.query("SELECT * FROM books", (ResultSet rs, int rowNum) -> {
             Book book = new Book();
