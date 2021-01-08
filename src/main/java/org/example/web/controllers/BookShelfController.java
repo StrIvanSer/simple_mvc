@@ -3,6 +3,7 @@ package org.example.web.controllers;
 
 import org.apache.log4j.Logger;
 import org.example.app.services.BookService;
+import org.example.app.services.FileService;
 import org.example.web.dto.Book;
 import org.example.web.dto.BookIdToRemove;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +22,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Controller
 @RequestMapping(value = "books")
@@ -35,6 +37,7 @@ public class BookShelfController {
 
     private final Logger logger = Logger.getLogger(BookShelfController.class);
     private final BookService bookService;
+    private final FileService fileService;
 
     @Value("${errorUpload.message}")
     private String errorUploadMessage;
@@ -43,17 +46,26 @@ public class BookShelfController {
     private String errorEmptyFieldMessage;
 
     @Autowired
-    public BookShelfController(BookService bookService) {
+    public BookShelfController(BookService bookService, FileService fileService) {
         this.bookService = bookService;
+        this.fileService = fileService;
     }
 
     @GetMapping("/shelf")
     public String books(Model model) {
+        refreshFiles();
         logger.info(this.toString());
-        model.addAttribute("book", new Book());
-        model.addAttribute("bookIdToRemove", new BookIdToRemove());
-        model.addAttribute("bookList", bookService.getAllBooks());
+//        model.addAttribute("book", new Book());
+//        model.addAttribute("bookIdToRemove", new BookIdToRemove());
+//        model.addAttribute("bookList", bookService.getAllBooks());
+//        model.addAttribute("nameFiles", fileService.getNameFiles());
+        model = baseModel(model);
         return "book_shelf";
+    }
+
+    private void refreshFiles() {
+        fileService.setFileList();
+        fileService.setNameFiles();
     }
 
     @PostMapping("/addBook")
@@ -69,6 +81,7 @@ public class BookShelfController {
             model.addAttribute("book", book);
             model.addAttribute("bookIdToRemove", new BookIdToRemove());
             model.addAttribute("bookList", bookService.getAllBooks());
+            model.addAttribute("nameFiles", fileService.getNameFiles());
             return "book_shelf";
         } else {
             bookService.saveBook(book);
@@ -82,6 +95,7 @@ public class BookShelfController {
         if (bindingResult.hasErrors()) {
             model.addAttribute("book", new Book());
             model.addAttribute("bookList", bookService.getAllBooks());
+            model.addAttribute("nameFiles", fileService.getNameFiles());
             return "book_shelf";
         } else {
             bookService.removeBookById(bookIdRemove.getId());
@@ -106,6 +120,7 @@ public class BookShelfController {
         model.addAttribute("book", new Book());
         model.addAttribute("bookIdToRemove", new BookIdToRemove());
         model.addAttribute("bookList", bookService.getBooksWithFilter(filter));
+        model.addAttribute("nameFiles", fileService.getNameFiles());
         return "book_shelf";
     }
 
@@ -132,6 +147,7 @@ public class BookShelfController {
             stream.close();// закрывает соединение
 
             logger.info("new file saved: " + serverFile.getAbsolutePath());
+            refreshFiles();
 
             return "redirect:/books/shelf";
 
@@ -139,32 +155,36 @@ public class BookShelfController {
     }
 
     @RequestMapping("/download")
-    public ResponseEntity<Object> downloadFile(@RequestParam("downloadfile") File file) throws Exception {
+    public void download(@RequestParam("fileName") String fileName, HttpServletResponse response) {
+        String rootPath = System.getProperty("catalina.home");
+        File dir = new File(rootPath + File.separator + "external_uploads");
 
-        logger.info("Start download");
-        String filename = System.getProperty("catalina.home");
-        File downloadFile = new File(filename + File.separator + "external_uploads/" + file.getName());
-        logger.info("Start Download" + downloadFile.getAbsolutePath());
-        InputStreamResource resource = new InputStreamResource(new FileInputStream(downloadFile));
-        HttpHeaders headers = new HttpHeaders();
+        Path file = Paths.get(String.valueOf(dir), fileName);
 
-        headers.add("Content-Disposition", String.format("attachment; filename=\"%s\"", downloadFile.getName()));
-        headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
-        headers.add("Pragma", "no-cache");
-        headers.add("Expires", "0");
-
-        ResponseEntity<Object> responseEntity = ResponseEntity.ok().headers(headers).contentLength(downloadFile.length()).contentType(
-                MediaType.parseMediaType("application/txt")).body(resource);
-        logger.info("finish download");
-        return responseEntity;
+        if (Files.exists(file)) {
+            response.setHeader("Content-disposition", "attachment; filename = " + fileName);
+            response.setContentType("application/octet-stream");
+            try {
+                Files.copy(file, response.getOutputStream());
+                response.getOutputStream().flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private String errorMessagesPage(String errorMessage, String errorField, Model model) {
+        model = baseModel(model);
+        model.addAttribute(errorMessage, errorField);
+        return "book_shelf";
+    }
+
+    public Model baseModel(Model model){
         model.addAttribute("book", new Book());
         model.addAttribute("bookIdToRemove", new BookIdToRemove());
         model.addAttribute("bookList", bookService.getAllBooks());
-        model.addAttribute(errorMessage, errorField);
-        return "book_shelf";
+        model.addAttribute("nameFiles", fileService.getNameFiles());
+        return model;
     }
 
 }
