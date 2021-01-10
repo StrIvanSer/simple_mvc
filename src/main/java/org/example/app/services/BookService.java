@@ -1,7 +1,6 @@
 package org.example.app.services;
 
 import org.apache.log4j.Logger;
-import org.example.repo.BookRepository;
 import org.example.repo.ProjectRepository;
 import org.example.web.dto.Book;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +15,10 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 
 @Service
 public class BookService {
+
+    static final String AUTHOR = "author";
+    static final String TITLE = "title";
+    static final String SIZE = "size";
 
     private final Logger logger = Logger.getLogger(BookService.class);
 
@@ -34,15 +37,27 @@ public class BookService {
         bookRepo.store(book);
     }
 
-    public boolean removeBookById(Integer bookIdRemove) {
-        return bookRepo.removeItemById(bookIdRemove);
+    public void removeBookById(Integer bookIdRemove) {
+        bookRepo.removeItemById(bookIdRemove);
     }
 
-    public boolean removeBookByField(String valueField) {
+    public boolean removeBookByField(String valueField, String field) {
         List<Book> allBooks = bookRepo.retrieveAll();
         if (valueField.length() == 0) return false;
         for (Book book : allBooks) {
             String bookValue = book.getAuthor() + " " + book.getTitle() + " " + book.getSize();
+            switch (field) {
+                case (AUTHOR):
+                    bookValue = book.getAuthor();
+                    break;
+                case (TITLE):
+                    bookValue = book.getTitle();
+                    break;
+                case (SIZE):
+                    bookValue = book.getSize().toString();
+                    break;
+            }
+
             if (isMatched(valueField, bookValue)) {
                 bookRepo.removeItemByField(book);
             }

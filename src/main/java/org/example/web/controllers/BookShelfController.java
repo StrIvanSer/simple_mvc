@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.text.html.Option;
 import javax.validation.Valid;
 
 import java.io.*;
@@ -55,10 +56,6 @@ public class BookShelfController {
     public String books(Model model) {
         refreshFiles();
         logger.info(this.toString());
-//        model.addAttribute("book", new Book());
-//        model.addAttribute("bookIdToRemove", new BookIdToRemove());
-//        model.addAttribute("bookList", bookService.getAllBooks());
-//        model.addAttribute("nameFiles", fileService.getNameFiles());
         model = baseModel(model);
         return "book_shelf";
     }
@@ -105,8 +102,8 @@ public class BookShelfController {
     }
 
     @PostMapping("/removeByField")
-    public String removeBookBy(@RequestParam String fieldValue, Model model) {
-        if (!bookService.removeBookByField(fieldValue)) {
+    public String removeBookBy(@RequestParam String fieldValue, Model model, @RequestParam String field) {
+        if (!bookService.removeBookByField(fieldValue, field)) {
             errorEmptyFieldMessage = "Filed is empty";
             return errorMessagesPage("errorEmptyFieldMessage", errorEmptyFieldMessage, model);
         }
@@ -130,25 +127,7 @@ public class BookShelfController {
             errorUploadMessage = "File is not found";
             return errorMessagesPage("errorUploadMessage", errorUploadMessage, model);
         } else {
-            String name = file.getOriginalFilename();
-            byte[] bytes = file.getBytes();
-
-            //create dir
-            String rootPath = System.getProperty("catalina.home");
-            File dir = new File(rootPath + File.separator + "external_uploads");
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-
-            //create file
-            File serverFile = new File(dir.getAbsolutePath() + File.separator + name);
-            BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(serverFile));
-            stream.write(bytes);// записывает данные
-            stream.close();// закрывает соединение
-
-            logger.info("new file saved: " + serverFile.getAbsolutePath());
-            refreshFiles();
-
+            fileService.uploadFile(file);
             return "redirect:/books/shelf";
 
         }
@@ -156,21 +135,7 @@ public class BookShelfController {
 
     @RequestMapping("/download")
     public void download(@RequestParam("fileName") String fileName, HttpServletResponse response) {
-        String rootPath = System.getProperty("catalina.home");
-        File dir = new File(rootPath + File.separator + "external_uploads");
-
-        Path file = Paths.get(String.valueOf(dir), fileName);
-
-        if (Files.exists(file)) {
-            response.setHeader("Content-disposition", "attachment; filename = " + fileName);
-            response.setContentType("application/octet-stream");
-            try {
-                Files.copy(file, response.getOutputStream());
-                response.getOutputStream().flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        fileService.downloadFile(fileName, response);
     }
 
     private String errorMessagesPage(String errorMessage, String errorField, Model model) {
@@ -179,7 +144,7 @@ public class BookShelfController {
         return "book_shelf";
     }
 
-    public Model baseModel(Model model){
+    public Model baseModel(Model model) {
         model.addAttribute("book", new Book());
         model.addAttribute("bookIdToRemove", new BookIdToRemove());
         model.addAttribute("bookList", bookService.getAllBooks());

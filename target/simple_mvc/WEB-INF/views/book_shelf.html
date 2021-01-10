@@ -41,7 +41,7 @@
             <tr>
                 <td>
                     <input type="text" placeholder="author" th:field="*{author}">
-                    <p th:if="${#fields.hasErrors('author')}" >Author is Empty, please fill in the form ! </p>
+                    <p th:if="${#fields.hasErrors('author')}">Author is Empty, please fill in the form ! </p>
                 </td>
                 <td>
                     <input type="text" placeholder="book_title" th:field="*{title}">
@@ -80,7 +80,14 @@
         <table>
             <tr>
                 <td>
-                    <input type="text" placeholder="Any field" th:name="fieldValue">
+                    <input type="text" placeholder="Field" th:name="fieldValue">
+                </td>
+                <td>
+                    <select name="field">
+                        <option value="author">Author</option>
+                        <option value="title">Title </option>
+                        <option value="size">Size</option>
+                    </select>
                 </td>
                 <td>
                     <input type="submit" value="remove">
